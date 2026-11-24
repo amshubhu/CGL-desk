@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CGL Tier 2 Daily Desk</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600&display=swap">
+<style>
+:root{--bg:#eef1f6;--fg:#14213d;--mut:#5d6882;--card:#fff;--bd:#d5dbe8;--ac:#2f5bea;--ok:#12803f;--bad:#c0281f;--half:#a76400;--okbg:#dff3e6;--badbg:#fbe1de;--hfbg:#fdeccd;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1420;--fg:#e6ebf7;--mut:#97a2bd;--card:#18202f;--bd:#2c3750;--ac:#7c9bff;--ok:#5fd08e;--bad:#ff8f86;--half:#f0b659;--okbg:#14301f;--badbg:#3a1a18;--hfbg:#3a2c10}}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:760px;margin:0 auto;padding:16px}
+h1{font:600 24px/1.2 "Source Serif 4",Georgia,serif;margin:8px 0 2px}
+.sub{color:var(--mut);font-size:14px;margin-bottom:12px}
+nav{display:flex;gap:6px;overflow-x:auto;margin:12px 0;border-bottom:2px solid var(--bd)}
+nav button{background:none;border:0;padding:10px 14px;font:inherit;color:var(--mut);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}
+nav button.on{color:var(--fg);border-color:var(--ac);font-weight:600}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:16px;margin-bottom:14px}
+.passage{font:18px/1.75 "Source Serif 4",Georgia,serif}.passage p{margin:0 0 14px}
+button.b,select,textarea{font:inherit;color:var(--fg)}
+button.b{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:10px 16px;cursor:pointer}
+button.b.g{background:none;color:var(--fg);border:1px solid var(--bd)}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.q{margin-bottom:18px}.q h3{font:600 16px/1.4 inherit;margin:0 0 8px}
+.opt{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:none;border:1px solid var(--bd);border-radius:8px;padding:8px 10px;margin-bottom:6px;cursor:pointer;color:var(--fg);font:inherit}
+.bub{flex:none;width:26px;height:26px;border-radius:50%;border:2px solid var(--mut);display:grid;place-items:center;font-size:12px;font-weight:600}
+.opt.sel .bub{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.opt.ok{background:var(--okbg);border-color:var(--ok)}.opt.ok .bub{background:var(--ok);border-color:var(--ok);color:#fff}
+.opt.no{background:var(--badbg);border-color:var(--bad)}.opt.no .bub{background:var(--bad);border-color:var(--bad);color:#fff}
+.ex{font-size:14px;color:var(--mut);margin-top:4px}
+.cloze{font:18px/2.2 "Source Serif 4",Georgia,serif}
+.cloze select{background:var(--card);border:2px solid var(--bd);border-radius:6px;padding:2px 4px;font-size:15px;max-width:140px}
+.cloze select.ok{border-color:var(--ok);background:var(--okbg)}.cloze select.no{border-color:var(--bad);background:var(--badbg)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
+#box{width:100%;height:190px;background:var(--card);border:2px solid var(--bd);border-radius:8px;padding:12px;font:17px/1.6 "Source Serif 4",Georgia,serif;resize:vertical}
+#src{max-height:200px;overflow:auto;user-select:none}
+.timer{font:600 28px/1 ui-monospace,Menlo,monospace}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:12px 0}
+.stat{border:1px solid var(--bd);border-radius:8px;padding:10px}.stat b{display:block;font-size:22px}.stat span{font-size:13px;color:var(--mut)}
+.diff{font:16px/1.9 "Source Serif 4",Georgia,serif}
+.diff .h{background:var(--hfbg);border-bottom:2px solid var(--half)}.diff .f{background:var(--badbg);color:var(--bad)}
+.diff .f s{opacity:.7}.diff .m{color:var(--bad);border:1px dashed var(--bad);border-radius:3px}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:6px;border-bottom:1px solid var(--bd);text-align:left}
+details textarea{width:100%;height:120px;background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:8px}
+.pass{color:var(--ok)}.fail{color:var(--bad)}
+</style></head><body><main>
+<h1>CGL Tier 2 Daily Desk</h1><div class="sub" id="meta">Loading…</div>
+<nav id="nav"></nav><div id="view"></div>
+<details class="card"><summary>Load today’s data manually</summary>
+<p class="sub">Paste the JSON produced by the generator. It is saved in this browser.</p>
+<textarea id="imp" placeholder="{ &quot;date&quot;: … }"></textarea>
+<div class="row"><button class="b" id="impb">Load JSON</button></div></details>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const SAMPLE={date:"Sample",title:"Sample passage (replace with a real editorial)",passage:"Urban water management has long been treated as an engineering problem, yet the evidence suggests that governance matters at least as much as infrastructure. Cities that meter consumption, price water progressively and repair leaking pipes recover costs and reduce waste.\n\nThe harder task is political. Subsidies that benefit the wealthiest households are rarely withdrawn, and utilities that cannot raise tariffs cannot maintain networks. Reform therefore requires transparent accounting and public trust.",
+cloze:{text:"Urban water management has long been __1__ as an engineering problem, yet governance matters at least as __2__ as infrastructure. Utilities that cannot raise tariffs cannot __3__ their networks, and reform requires public __4__.",options:[["treated","ignored","hidden","praised"],["much","many","few","less"],["maintain","abandon","ignore","dilute"],["trust","fear","noise","delay"]],answers:[0,0,0,0]},
+mcq:[{tag:"Vocab",q:"Closest meaning of ‘progressively’ as used in the passage:",options:["Gradually in steps that rise with use","Hurriedly","Reluctantly","Without limits"],answer:0,explain:"Progressive pricing rises in steps with consumption."},{tag:"Passage",q:"According to the passage, why is reform difficult?",options:["Lack of engineers","Political reluctance to withdraw subsidies","Cheap technology","Excess rainfall"],answer:1,explain:"The second paragraph names subsidies and tariffs."}]};
+let D=SAMPLE,tab="Read",ans={},cl={},done=false;
+const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+async function load(){
+ try{const r=await fetch("data/latest.json",{cache:"no-store"});if(!r.ok)throw 0;D=await r.json()}catch(e){D=store.get("cgl_data")||SAMPLE}
+ $("meta").textContent=(D.date||"")+(D.source?" · "+D.source:"");nav();show()}
+function nav(){const t=["Read","Cloze","Practice","Typing"];$("nav").innerHTML=t.map(x=>`<button class="${x==tab?"on":""}" data-t="${x}">${x}</button>`).join("");
+ $("nav").onclick=e=>{if(e.target.dataset.t){tab=e.target.dataset.t;nav();show()}}}
+function show(){({Read:rRead,Cloze:rCloze,Practice:rPractice,Typing:rTyping})[tab]()}
+function rRead(){$("view").innerHTML=`<div class="card"><h2 style="margin-top:0">${esc(D.title)}</h2><div class="passage">${D.passage.split(/\n+/).map(p=>`<p>${esc(p)}</p>`).join("")}</div></div>`}
+function rCloze(){const c=D.cloze;if(!c){$("view").innerHTML='<div class="card">No cloze test in today’s data.</div>';return}
+ const h=esc(c.text).replace(/__(\d+)__/g,(m,n)=>{const i=n-1;return`<select data-i="${i}"><option value="">(${n})</option>${c.options[i].map((o,j)=>`<option value="${j}">${esc(o)}</option>`).join("")}</select>`});
+ $("view").innerHTML=`<div class="card cloze" id="cz">${h}</div><div class="row"><button class="b" id="chk">Check answers</button><span id="cs" class="sub"></span></div>`;
+ $("chk").onclick=()=>{let s=0;document.querySelectorAll("#cz select").forEach(x=>{const ok=+x.value===c.answers[x.dataset.i]&&x.value!=="";x.className=ok?"ok":"no";if(ok)s++});$("cs").textContent=`Score: ${s} / ${c.answers.length}`}}
+function rPractice(){const Q=D.mcq||[];ans={};done=false;
+ $("view").innerHTML=Q.map((q,i)=>`<div class="card q" data-q="${i}"><h3>${i+1}. ${q.tag?`<i>${esc(q.tag)}</i> — `:""}${esc(q.q)}</h3>${q.options.map((o,j)=>`<button class="opt" data-q="${i}" data-o="${j}"><span class="bub">${"ABCD"[j]}</span>${esc(o)}</button>`).join("")}<div class="ex"></div></div>`).join("")+`<div class="row"><button class="b" id="sub">Submit</button><span id="ps" class="sub"></span></div>`;
+ $("view").onclick=e=>{const b=e.target.closest(".opt");if(b&&!done){ans[b.dataset.q]=+b.dataset.o;document.querySelectorAll(`.opt[data-q="${b.dataset.q}"]`).forEach(x=>x.classList.toggle("sel",x===b))}};
+ $("sub").onclick=()=>{done=true;let s=0;Q.forEach((q,i)=>{const o=document.querySelectorAll(`.opt[data-q="${i}"]`);o[q.answer].classList.add("ok");if(ans[i]===q.answer)s++;else if(ans[i]!=null)o[ans[i]].classList.add("no");o[0].closest(".q").querySelector(".ex").textContent=q.explain||""});
+  const m=s*2-(Object.keys(ans).length-s)*0.5;$("ps").textContent=`${s}/${Q.length} correct · ${m} marks (+2/−0.5)`}}
+/* ---------- typing ---------- */
+const norm=w=>w.toLowerCase().replace(/[^\p{L}\p{N}]/gu,"");
+function rTyping(){const hist=store.get("cgl_typing")||[];
+ $("view").innerHTML=`<div class="card"><div class="row"><label>Duration <select id="dur"><option value="15">15 min</option><option value="10">10 min</option><option value="5">5 min</option></select></label>
+ <label>Allowed error % <select id="cut"><option>15</option><option>10</option><option>5</option></select></label><span class="timer" id="tm">15:00</span><button class="b" id="go">Start test</button></div>
+ <div class="passage card" id="src" style="font-size:17px">${esc(D.passage.replace(/\s+/g," "))}</div>
+ <textarea id="box" disabled spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Press Start, then type the passage above. Paste is disabled."></textarea>
+ <div class="row"><button class="b g" id="fin" disabled>Finish now</button></div></div><div id="res"></div>
+ <div class="card"><b>Recent tests</b><table><tr><th>Date</th><th>Net WPM</th><th>Keys</th><th>Error %</th></tr>${hist.slice(-8).reverse().map(h=>`<tr><td>${h.d}</td><td>${h.net}</td><td>${h.keys}</td><td>${h.err}%</td></tr>`).join("")||"<tr><td colspan=4>No tests yet</td></tr>"}</table></div>`;
+ const box=$("box");let t0=0,iv=0,keys=0,total=900;
+ $("dur").onchange=()=>{$("tm").textContent=$("dur").value+":00"};
+ ["paste","cut","drop","contextmenu"].forEach(ev=>box.addEventListener(ev,e=>e.preventDefault()));
+ box.addEventListener("keydown",e=>{if(e.key.length===1||e.key==="Enter")keys++});
+ $("go").onclick=()=>{total=+$("dur").value*60;box.value="";box.disabled=false;box.focus();keys=0;t0=Date.now();$("go").disabled=true;$("fin").disabled=false;$("dur").disabled=true;$("res").innerHTML="";
+  iv=setInterval(()=>{const r=Math.max(0,total-Math.floor((Date.now()-t0)/1000));$("tm").textContent=Math.floor(r/60)+":"+String(r%60).padStart(2,"0");if(!r)end()},250)};
+ $("fin").onclick=end;
+ function end(){clearInterval(iv);box.disabled=true;$("fin").disabled=true;$("go").disabled=false;$("dur").disabled=false;
+  const mins=Math.max(1/60,Math.min(total,(Date.now()-t0)/1000)/60);analyse(box.value,keys,mins,+$("cut").value)}}
+function analyse(text,keys,mins,cut){
+ const A0=D.passage.trim().split(/\s+/),B=text.trim()?text.trim().split(/\s+/):[];
+ if(!B.length){$("res").innerHTML='<div class="card">You did not type anything.</div>';return}
+ const A=A0.slice(0,B.length+3),n=A.length,m=B.length,d=Array.from({length:n+1},()=>Array(m+1).fill(0));
+ const sc=(a,b)=>a===b?0:(norm(a)&&norm(a)===norm(b)?0.4:1);
+ for(let i=0;i<=n;i++)d[i][0]=i;for(let j=0;j<=m;j++)d[0][j]=j;
+ for(let i=1;i<=n;i++)for(let j=1;j<=m;j++)d[i][j]=Math.min(d[i-1][j-1]+sc(A[i-1],B[j-1]),d[i-1][j]+1,d[i][j-1]+1);
+ let i=n,j=m,ops=[];
+ while(i>0||j>0){if(i&&j&&d[i][j]===d[i-1][j-1]+sc(A[i-1],B[j-1])){const s=sc(A[i-1],B[j-1]);ops.push(s===0?["ok",B[j-1]]:s<1?["h",B[j-1],A[i-1]]:["f",B[j-1],A[i-1]]);i--;j--}
+  else if(j&&d[i][j]===d[i][j-1]+1){ops.push(["x",B[j-1]]);j--}else{ops.push(["m",A[i-1]]);i--}}
+ ops.reverse();while(ops.length&&ops[ops.length-1][0]==="m")ops.pop();
+ let full=0,half=0,sub=0,om=0,ex=0,cp=0;
+ ops.forEach(o=>{if(o[0]==="f"){full++;sub++}else if(o[0]==="m"){full++;om++}else if(o[0]==="x"){full++;ex++}else if(o[0]==="h"){half++;cp++}});
+ const sp=(text.match(/\S {2,}\S/g)||[]).length;half+=sp;
+ const pen=full+half/2,err=+(pen/m*100).toFixed(1),gross=+(text.length/5/mins).toFixed(1),net=+Math.max(0,(m-pen)/mins).toFixed(1);
+ const html=ops.map(o=>o[0]==="ok"?esc(o[1]):o[0]==="h"?`<span class="h" title="should be ${esc(o[2])}">${esc(o[1])}</span>`:o[0]==="f"?`<span class="f"><s>${esc(o[2])}</s> ${esc(o[1])}</span>`:o[0]==="x"?`<span class="f" title="extra word"><s>${esc(o[1])}</s></span>`:`<span class="m" title="omitted">${esc(o[1])}</span>`).join(" ");
+ const ok=err<=cut;
+ $("res").innerHTML=`<div class="card"><h2 style="margin-top:0" class="${ok?"pass":"fail"}">${ok?"Within the allowed error":"Over the allowed error"} (${err}% vs ${cut}%)</h2>
+ <div class="stats"><div class="stat"><b>${keys}</b><span>Key depressions</span></div><div class="stat"><b>${gross}</b><span>Gross WPM</span></div><div class="stat"><b>${net}</b><span>Net WPM</span></div><div class="stat"><b>${m}</b><span>Words typed</span></div>
+ <div class="stat"><b>${full}</b><span>Full mistakes (${sub} wrong, ${om} omitted, ${ex} extra)</span></div><div class="stat"><b>${half}</b><span>Half mistakes (${cp} case/punctuation, ${sp} spacing)</span></div><div class="stat"><b>${pen}</b><span>Penalty (full + ½ half)</span></div><div class="stat"><b>${err}%</b><span>Error % of words typed</span></div></div>
+ <div class="diff">${html}</div><p class="sub">Amber: half mistake. Red: full mistake (struck word is the correct one). Dashed: omitted word. Rules follow the usual SSC pattern; confirm limits in your post’s notice.</p></div>`;
+ const h=store.get("cgl_typing")||[];h.push({d:new Date().toLocaleDateString(),net,keys,err});store.set("cgl_typing",h.slice(-30));
+}
+$("impb").onclick=()=>{try{const j=JSON.parse($("imp").value);if(!j.passage)throw 0;store.set("cgl_data",j);D=j;$("meta").textContent=j.date||"";tab="Read";nav();show()}catch(e){alert("That is not valid data. It needs at least a passage field.")}};
+load();
+</script></body></html>
