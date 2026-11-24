@@ -47,27 +47,40 @@ INPUT:
 {source_note}"""
 
 import time, re
-headers = {"Accept": "application/vnd.github+json", "Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
-           "X-GitHub-Api-Version": "2022-11-28", "Content-Type": "application/json"}
-body = {"model": "openai/gpt-4.1-mini", "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.4, "max_tokens": 4000}
+
+def ask_github():
+    h = {"Accept": "application/vnd.github+json", "Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
+         "X-GitHub-Api-Version": "2022-11-28", "Content-Type": "application/json"}
+    b = {"model": "openai/gpt-4.1-mini", "messages": [{"role": "user", "content": prompt}],
+         "temperature": 0.4, "max_tokens": 4000}
+    r = requests.post("https://models.github.ai/inference/chat/completions", headers=h, json=b, timeout=180)
+    print(f"GitHub Models: HTTP {r.status_code}, {len(r.text)} chars, body starts: {r.text[:200]!r}")
+    return r.json()["choices"][0]["message"]["content"]
+
+def ask_gemini():
+    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+    h = {"x-goog-api-key": os.environ["GEMINI_API_KEY"], "Content-Type": "application/json"}
+    b = {"contents": [{"parts": [{"text": prompt}]}],
+         "generationConfig": {"responseMimeType": "application/json", "temperature": 0.4}}
+    r = requests.post(url, headers=h, json=b, timeout=180)
+    print(f"Gemini: HTTP {r.status_code}, {len(r.text)} chars, body starts: {r.text[:200]!r}")
+    return r.json()["candidates"][0]["content"]["parts"][0]["text"]
+
+engines = ([ask_gemini] if os.environ.get("GEMINI_API_KEY") else []) + [ask_github]
 data = None
-for attempt in range(3):
-    r = requests.post("https://models.github.ai/inference/chat/completions", headers=headers, json=body, timeout=180)
-    print(f"Attempt {attempt+1}: HTTP {r.status_code}, {len(r.text)} chars")
-    if r.status_code == 200 and r.text.strip():
+for attempt in range(2):
+    for ask in engines:
         try:
-            txt = r.json()["choices"][0]["message"]["content"]
-            m = re.search(r"\{.*\}", txt, re.S)
+            m = re.search(r"\{.*\}", ask(), re.S)
             data = json.loads(m.group(0))
             break
         except Exception as e:
-            print("Could not parse reply:", e, r.text[:500])
-    else:
-        print("Reply body:", r.text[:500])
+            print(f"{ask.__name__} failed: {e}")
+    if data:
+        break
     time.sleep(5)
 if data is None:
-    raise SystemExit("Model call failed - see the reply body printed above")
+    raise SystemExit("All model calls failed - see the messages printed above")
 assert data.get("passage") and len(data.get("mcq", [])) >= 5, "Model output looks incomplete"
 os.makedirs("data", exist_ok=True)
 for name in ("latest.json", f"{today}.json"):
